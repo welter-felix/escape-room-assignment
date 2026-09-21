@@ -8,5 +8,5 @@ while True:
         "inspect <item>, use <item>, inventory, hint, save, load, quit")
 
     if (command == "quit"):
-        print("[Game] Goodbye. Transcript written to run.txt ")  #Should the run.txt be hardcoded or have a placeholder?
+        print("[Game] Goodbye. Transcript written to run.txt ")  
         break
