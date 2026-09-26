@@ -1,12 +1,26 @@
-print ("[Game] Cyber Escape Room started. Type 'help' for commands.")
+#First we parse the starting argument. Here I check if they are taken correctly, later on we add logic to it.
+import argparse
 
-while True:
-    command = input("> ") #gets the user's command
+from escaperoom.engine import start_game
 
-    if (command == "help"):
-        print("The supported commands are look, move <room>, " \
-        "inspect <item>, use <item>, inventory, hint, save, load, quit")
+#Command to run 
+#python escape.py --start intro --data data --transcript run.txt
 
-    if (command == "quit"):
-        print("[Game] Goodbye. Transcript written to run.txt ")  
-        break
+parser = argparse.ArgumentParser()
+parser.add_argument("--start",required=True)
+parser.add_argument("--data",required=True)
+parser.add_argument("--transcript",required=True)
+
+args = parser.parse_args()
+
+
+#this will be used later to determine the starting room
+print(args.start)
+
+#file location of the data
+print(args.data)
+
+#file to which we write the transcript
+print(args.transcript)
+
+start_game(args.start,args.data,args.transcript)
