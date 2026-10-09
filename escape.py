@@ -7,20 +7,10 @@ from escaperoom.engine import start_game
 #python escape.py --start intro --data data --transcript run.txt
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--start",required=True)
-parser.add_argument("--data",required=True)
-parser.add_argument("--transcript",required=True)
+parser.add_argument("--start",default="intro")
+parser.add_argument("--data",default="data")
+parser.add_argument("--transcript",default="run.txt")
 
 args = parser.parse_args()
-
-
-#this will be used later to determine the starting room
-print(args.start)
-
-#file location of the data
-print(args.data)
-
-#file to which we write the transcript
-print(args.transcript)
 
 start_game(args.start,args.data,args.transcript)
