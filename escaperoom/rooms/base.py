@@ -13,9 +13,12 @@ class GameState:
 
 class Room:
     #Base class for all the rooms
-    def __init__(self, name: str, description: str):
+    def __init__(self, name: str, description: str, items: list[str] | None = None):
         self.name= name
         self.description = description
+        #the items the player can inspect in this room (e.g. auth.log)
+        #optional, so rooms that don't pass any items yet still work
+        self.items = items if items is not None else []
          
     #each room implements its own solution
     def solve(self, state: GameState):
