@@ -6,7 +6,7 @@ from .base import Room, GameState
 class SocRoom(Room):
 
     def __init__(self):
-        super().__init__("SOC", "Log parsing & anomaly detection")
+        super().__init__("SOC", "Log parsing & anomaly detection", ["auth.log"])
 
     def solve(self, state: GameState):
 
@@ -145,12 +145,12 @@ class SocRoom(Room):
         }
 
 #TEST - Run with "python -m escaperoom.rooms.soc" - TO BE REMOVED
-state = GameState()
-room = SocRoom()
-result = room.solve(state)
+#state = GameState()
+#room = SocRoom()
+#result = room.solve(state)
 
-print("TOKEN[KEYPAD]=" + result["token"])
-print("EVIDENCE[KEYPAD].TOP24=" + result["top24"])
-print("EVIDENCE[KEYPAD].COUNT=" + str(result["count"]))
-print("EVIDENCE[KEYPAD].SAMPLE=" + result["sample"])
-print("EVIDENCE[KEYPAD].MALFORMED_SKIPPED=" + str(result["malformed"]))
+#print("TOKEN[KEYPAD]=" + result["token"])
+#print("EVIDENCE[KEYPAD].TOP24=" + result["top24"])
+#print("EVIDENCE[KEYPAD].COUNT=" + str(result["count"]))
+#print("EVIDENCE[KEYPAD].SAMPLE=" + result["sample"])
+#print("EVIDENCE[KEYPAD].MALFORMED_SKIPPED=" + str(result["malformed"]))

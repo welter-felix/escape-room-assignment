@@ -5,7 +5,7 @@ from .base import Room, GameState
 
 class DnsRoom(Room):
     def __init__(self):
-        super().__init__("dns", "Config analysis and decoding")
+        super().__init__("dns", "Config analysis and decoding", ["dns.cfg"])
 
     def solve(self, state: GameState):
 
@@ -63,11 +63,11 @@ class DnsRoom(Room):
             }
 
 #TEST - Run with "python -m escaperoom.rooms.dns" - RO BE REMOVED
-state = GameState()
-room = DnsRoom()
-result = room.solve(state)
+#state = GameState()
+#room = DnsRoom()
+#result = room.solve(state)
 
-print("TOKEN[DNS]=" + result["token"])
-print("EVIDENCE[DNS].KEY=" + result["key"])
-print("EVIDENCE[DNS].ENCODING=" + result["encoding"])
-print("EVIDENCE[DNS].DECODED_LINE=" + result["decoded_line"])
+#print("TOKEN[DNS]=" + result["token"])
+#print("EVIDENCE[DNS].KEY=" + result["key"])
+#print("EVIDENCE[DNS].ENCODING=" + result["encoding"])
+#print("EVIDENCE[DNS].DECODED_LINE=" + result["decoded_line"])
