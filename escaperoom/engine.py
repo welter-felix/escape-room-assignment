@@ -4,6 +4,7 @@ from escaperoom.rooms.base import GameState
 from escaperoom.rooms.vault import VaultRoom
 from escaperoom.rooms.dns import DnsRoom
 from escaperoom.rooms.soc import SocRoom
+from escaperoom.rooms.malware import MalwareRoom
 
 #Here I think its best to keep track of all our global variables
 
@@ -17,7 +18,7 @@ def start_game(start_room,data,transcript_filename):
     state = GameState(current_room=start_room)
 
     #here we put all our rooms in a room dictionary with its name to lowercase to avoid conflicts
-    rooms = {room.name.lower(): room for room in [VaultRoom(), DnsRoom(), SocRoom()]}
+    rooms = {room.name.lower(): room for room in [VaultRoom(), DnsRoom(), SocRoom(),MalwareRoom()]}
     file_location = data +"/"
     
     print ("[Game] Cyber Escape Room started. Type 'help' for commands.")
@@ -81,7 +82,7 @@ def start_game(start_room,data,transcript_filename):
                     print("Please provide an item to inspect. Usage: \"inspect <item>\"")
                     #possible items also showing
                     continue
-                #get the room we are in, None if it is not a room object (e.g. "intro") / remove laterthe None 
+                #get the room we are in, None if it is not a room object (e.g. "intro") / remove later the None 
                 room = rooms.get(state.current_room)
                 if room is None or parts[1] not in room.items:
                     print("There is no item called "+ parts[1] + " here. Type \"look\" to see the items.")
