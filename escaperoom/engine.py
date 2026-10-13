@@ -5,6 +5,7 @@ from escaperoom.rooms.vault import VaultRoom
 from escaperoom.rooms.dns import DnsRoom
 from escaperoom.rooms.soc import SocRoom
 from escaperoom.rooms.malware import MalwareRoom
+from escaperoom.rooms.finalgate import FinalGateRoom
 
 #Here I think its best to keep track of all our global variables
 
@@ -18,7 +19,7 @@ def start_game(start_room,data,transcript_filename):
     state = GameState(current_room=start_room)
 
     #here we put all our rooms in a room dictionary with its name to lowercase to avoid conflicts
-    rooms = {room.name.lower(): room for room in [VaultRoom(), DnsRoom(), SocRoom(),MalwareRoom()]}
+    rooms = {room.name.lower(): room for room in [VaultRoom(), DnsRoom(), SocRoom(),MalwareRoom(), FinalGateRoom()]}
     file_location = data +"/"
     
     print ("[Game] Cyber Escape Room started. Type 'help' for commands.")
