@@ -1,7 +1,7 @@
 
 import hashlib
 import hmac
-from .base import Room, GameState
+from .base import Room, GameState, REQUIRED_TOKENS
 
 
 class FinalGateRoom(Room):
@@ -32,7 +32,7 @@ class FinalGateRoom(Room):
         secret_key = config["hmac_key"]
 
         # Checks that all tokens are available
-        for token in ["KEYPAD", "DNS", "SAFE", "PID"]:
+        for token in REQUIRED_TOKENS:
             if token not in state.tokens:
                 raise ValueError("Missing token: " + token)
 

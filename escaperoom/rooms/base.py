@@ -1,5 +1,8 @@
 from dataclasses import dataclass, field
 
+#the tokens the player needs to open the final gate, used by the commands and the final gate room
+REQUIRED_TOKENS = ["KEYPAD", "DNS", "SAFE", "PID"]
+
 @dataclass
 class GameState:
     #the current room of the game
@@ -10,6 +13,14 @@ class GameState:
 
     #the tokens obtained from the rooms
     tokens: dict[str, str] = field(default_factory=dict)
+
+    #returns the names of the required tokens we don't have yet, an empty list if we have all of them
+    def missing_tokens(self):
+        missing = []
+        for token in REQUIRED_TOKENS:
+            if token not in self.tokens:
+                missing.append(token)
+        return missing
 
 class Room:
     #Base class for all the rooms
