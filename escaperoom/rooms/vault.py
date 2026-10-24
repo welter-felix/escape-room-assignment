@@ -54,6 +54,6 @@ class VaultRoom(Room):
                             "check": f"{match.group(1)}+{match.group(2)}={match.group(3)}"
                         }
 
-        #no valid SAFE line was found
+        #In case no valid SAFE line was found
         return None
 
