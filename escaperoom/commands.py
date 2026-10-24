@@ -2,6 +2,7 @@
 #every command handler gets the same 3 arguments (state, rooms, arg) and returns a list of lines to print
 #the handlers do not print themselves, so the engine can print the lines and also write them to the transcript
 
+import json
 
 #splits the user input into the command and its argument, e.g. "Move VAULT" -> ("move", "vault")
 def parse_command(text):
@@ -105,12 +106,45 @@ def cmd_hint(state, rooms, arg):
 
 
 def cmd_save(state, rooms, arg):
-    return ["The save command is not implemented yet."]
+    if arg is None:
+        return ["Please provide a filename. Usage: \"save <filename>\""]
+    data = {
+        "current_room": state.current_room,
+        "tokens": state.tokens,
+    }
+
+    try:
+        with open(arg, "w", encoding = "utf-8") as file:
+            json.dump(data, file, indent=4)
+        return ["[Game] Progress saved"]
+    
+    except OSError as error:
+        return [f"[Game] Error saving the progress: {error}"]
 
 
 def cmd_load(state, rooms, arg):
-    return ["The load command is not implemented yet."]
+    if arg is None:
+        return ["Please provide a filename. Usage : \"load <filename>\""]
 
+    try:
+        with open(arg, "r", encoding = "utf-8") as file:
+            data = json.load(file)
+
+        if not isinstance (data, dict):
+            raise ValueError("Save file must contain a JSON object.")
+
+        room = data.get("current_room")
+        tokens = data.get("tokens")
+
+        state.current_room = room 
+        state.tokens = tokens 
+
+        return ["[Game] Progress loaded"]
+    except FileNotFoundError:
+        return [f"[Game] Save file '{arg}' does not exist."]
+    
+    except (OSError, json.JSONDecodeError, ValueError) as error:
+        return [f"[Game] Error loading the progress: {error}"]
 
 def cmd_quit(state, rooms, arg):
     #the engine checks for "quit" itself and stops the loop after printing this
