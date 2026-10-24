@@ -27,7 +27,8 @@ safe_pattern = re.compile(r'^\s*SAFE\s*\{\s*(\d+)\s*-\s*(\d+)\s*-\s*(\d+)\s*\}\s
 class VaultRoom(Room):
 
     def __init__(self):
-        super().__init__("vault", "Regex & checksum validation", ["vault_dump.txt"])
+        super().__init__("vault", "Regex & checksum validation", ["vault_dump.txt"],
+                         "Inspect vault_dump.txt. Only one SAFE{a-b-c} line has a valid checksum where a + b = c.")
 
     def solve(self, state: GameState):
 

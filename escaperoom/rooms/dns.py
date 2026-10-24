@@ -5,7 +5,8 @@ from .base import Room, GameState
 
 class DnsRoom(Room):
     def __init__(self):
-        super().__init__("dns", "Config analysis and decoding", ["dns.cfg"])
+        super().__init__("dns", "Config analysis and decoding", ["dns.cfg"],
+                         "Inspect dns.cfg. The token_tag tells you which hint record is the real one, and some hints are double encoded.")
 
     def solve(self, state: GameState):
 

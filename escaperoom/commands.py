@@ -70,8 +70,14 @@ def cmd_inspect(state, rooms, arg):
     if room is None or arg not in room.items:
         return ["There is no item called " + arg + " here. Type \"look\" to see the items."]
 
+    #the final gate only opens if we have all the tokens, this also covers "use gate" since it calls cmd_inspect
+    if room.name == "final":
+        missing = state.missing_tokens()
+        if missing:
+            return ["You still need: " + ", ".join(missing)]
+
     #the room solves its puzzle, stores the token in the state and returns the evidence
-    #the final gate raises a ValueError if tokens are missing, we catch it so the game does not crash
+    #the final gate still raises a ValueError as a safety check, we catch it so the game does not crash
     try:
         result = room.solve(state)
     except ValueError as error:
@@ -94,15 +100,34 @@ def cmd_inventory(state, rooms, arg):
     lines = ["Tokens collected:"]
     for name, token in state.tokens.items():
         lines.append(f"  {name}: {token}")
+
+    #show which tokens are still needed for the final gate
+    missing = state.missing_tokens()
+    if missing:
+        lines.append("Still missing: " + ", ".join(missing))
+    else:
+        lines.append("All tokens collected!")
     return lines
 
 
 def cmd_use(state, rooms, arg):
-    return ["The use command is not implemented yet."]
+    #we check each problem one after the other, so the player gets a specific message
+    if arg is None:
+        return ["Please provide an item to use. Usage: \"use <item>\""]
+    if state.current_room != "final":
+        return ["You can only use things in the final room."]
+    if arg != "gate":
+        return ["You can't use " + arg + ". Only the gate can be used here."]
 
-
-def cmd_hint(state, rooms, arg):
-    return ["The hint command is not implemented yet."]
+    #cmd_inspect checks if we have all the tokens before opening the gate
+    return cmd_inspect(state, rooms, "final_gate.txt")
+        
+def cmd_hint(state, rooms, _arg):
+    #get the room we are in, None if it is not a room object (e.g. "intro")
+    room = rooms.get(state.current_room)
+    if room is None:
+        return ["Type \"move <room>\" to go to a room. Rooms: " + ", ".join(rooms)]
+    return [room.hint]
 
 
 def cmd_save(state, rooms, arg):

@@ -1,7 +1,7 @@
 
 import hashlib
 import hmac
-from .base import Room, GameState
+from .base import Room, GameState, REQUIRED_TOKENS
 
 
 class FinalGateRoom(Room):
@@ -10,7 +10,8 @@ class FinalGateRoom(Room):
         super().__init__(
             "final",
             "Final token verification",
-            ["final_gate.txt"]
+            ["final_gate.txt"],
+            "Collect all four tokens (KEYPAD, DNS, SAFE, PID) first, then type \"use gate\"."
         )
 
     def solve(self, state: GameState, data_dir="data"):
@@ -31,7 +32,7 @@ class FinalGateRoom(Room):
         secret_key = config["hmac_key"]
 
         # Checks that all tokens are available
-        for token in ["KEYPAD", "DNS", "SAFE", "PID"]:
+        for token in REQUIRED_TOKENS:
             if token not in state.tokens:
                 raise ValueError("Missing token: " + token)
 
