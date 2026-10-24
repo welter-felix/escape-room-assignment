@@ -129,8 +129,9 @@ def cmd_hint(state, rooms, _arg):
         return ["Type \"move <room>\" to go to a room. Rooms: " + ", ".join(rooms)]
     return [room.hint]
 
-
+#saves the current game state to a JSON file, overwriting it if it already exists
 def cmd_save(state, rooms, arg):
+    
     if arg is None:
         return ["Please provide a filename. Usage: \"save <filename>\""]
     data = {
@@ -146,7 +147,7 @@ def cmd_save(state, rooms, arg):
     except OSError as error:
         return [f"[Game] Error saving the progress: {error}"]
 
-
+#loads the game state from a JSON file, replacing the current state with the loaded one
 def cmd_load(state, rooms, arg):
     if arg is None:
         return ["Please provide a filename. Usage : \"load <filename>\""]
