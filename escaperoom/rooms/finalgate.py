@@ -10,7 +10,8 @@ class FinalGateRoom(Room):
         super().__init__(
             "final",
             "Final token verification",
-            ["final_gate.txt"]
+            ["final_gate.txt"],
+            "Collect all four tokens (KEYPAD, DNS, SAFE, PID) first, then type \"use gate\"."
         )
 
     def solve(self, state: GameState, data_dir="data"):

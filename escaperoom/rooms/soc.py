@@ -6,7 +6,8 @@ from .base import Room, GameState
 class SocRoom(Room):
 
     def __init__(self):
-        super().__init__("SOC", "Log parsing & anomaly detection", ["auth.log"])
+        super().__init__("SOC", "Log parsing & anomaly detection", ["auth.log"],
+                         "Inspect auth.log. Look for the /24 subnet with the most failed logins; its busiest IP gives the keypad code.")
 
     def solve(self, state: GameState):
 
