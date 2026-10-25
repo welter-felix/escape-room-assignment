@@ -1,20 +1,20 @@
 import os
 from dataclasses import dataclass, field
 
-#the tokens the player needs to open the final gate, used by the commands and the final gate room
+# Tokens every puzzle room must provide before the final gate can be opened.
 REQUIRED_TOKENS = ["KEYPAD", "DNS", "SAFE", "PID"]
+
 
 @dataclass
 class GameState:
-    #the current room of the game
+    """Track the player's current room, collected tokens, and room transcripts."""
+
     current_room: str = "intro"
-
-    #the tokens obtained from the rooms, we use this also as inventory
     tokens: dict[str, str] = field(default_factory=dict)
+    transcript: dict[str, list[str]] = field(default_factory=dict)
 
-    transcript:dict[str, list[str]] = field(default_factory=dict)
-    #returns the names of the required tokens we don't have yet, an empty list if we have all of them
     def missing_tokens(self):
+        """Return the required token names that have not yet been collected."""
         missing = []
         for token in REQUIRED_TOKENS:
             if token not in self.tokens:
@@ -22,23 +22,23 @@ class GameState:
         return missing
 
 class Room:
-    #Base class for all the rooms
+    """Shared configuration and interface for each game room."""
+
     def __init__(self, name: str, description: str, token_name: str | None = None, item: str | None = None, hint: str = "No hint for this room.", data_dir: str = "data"):
         self.name= name
         self.description = description
         self.token_name = token_name
-        #the item the player can inspect in this room (e.g. auth.log)
-        #optional, so rooms that don't pass any items yet still work
+        # Optional filename for the evidence item associated with this room.
         self.item = item
-        #the hint shown with the "hint" command, optional like the items
+        # Text shown when the player requests a hint.
         self.hint = hint
-        #the folder with the data files, comes from the --data argument
+        # Directory containing this room's evidence files.
         self.data_dir = data_dir
 
-    #returns the path of a file in the data folder, os.path.join works with or without a "/" at the end of data_dir
     def data_path(self, filename):
+        """Build the path to a room's evidence file."""
         return os.path.join(self.data_dir, filename)
 
-    #each room implements its own solution
     def solve(self, state: GameState):
+        """Solve the room's puzzle; subclasses must provide the implementation."""
         raise NotImplementedError

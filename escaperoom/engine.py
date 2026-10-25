@@ -1,4 +1,4 @@
-#central engine of the game
+# The engine connects the rooms, command handlers, player state, and transcript.
 import time
 from escaperoom.commands import parse_command, COMMANDS
 from escaperoom.transcript import write_transcript
@@ -10,48 +10,51 @@ from escaperoom.rooms.soc import SocRoom
 from escaperoom.rooms.malware import MalwareRoom
 from escaperoom.rooms.finalgate import FinalGateRoom
 
-#Here I think its best to keep track of all our global variables
-
-    
-#List of commands we need to implement : look, move <room>, inspect <item>, use <item>, inventory, hint, save, load, quit.
-
-
 def start_game(start_room,data,transcript_filename):
-
-    #here we put all our rooms in a room dictionary with its name to lowercase to avoid conflicts
-    #every room gets the data folder from --data, so it knows where to find its file
+    # Create each room and index it by lowercase name for case-insensitive lookup.
+    # Pass the selected data folder to rooms that read evidence files.
     rooms = {room.name.lower(): room for room in [IntroRoom(), VaultRoom(data), DnsRoom(data), SocRoom(data), MalwareRoom(data), FinalGateRoom(data)]}
 
-    #if --start is not a valid room we start in the intro, so the player is always in a real room
+    # Use the intro room as a safe starting point if the requested room does not exist.
     start_room = start_room.lower()
     if start_room not in rooms:
         print(f"[Game] Unknown start room \"{start_room}\", starting in intro instead.")
         start_room = "intro"
 
-    #the state of the current game (room, inventory, tokens)
+    # Keep track of the player's current room and progress throughout the game.
     state = GameState(current_room=start_room)
 
     print ("[Game] Cyber Escape Room started. Type 'help' for commands.")
-    #show the starting room right away, so the player knows where they are
+    # Display the starting room before asking the player for a command.
     for line in COMMANDS["look"](state, rooms, None):
         print(line)
+
+    # Read commands until the player quits or closes/interrupts the input.
     try:
         while True:
+            # Split the typed line, then find the matching command handler.
             cmd, arg = parse_command(input("> "))
             handler = COMMANDS.get(cmd)
+
+            # Give an error for unknown commands; otherwise run the selected handler.
             if handler is None:
                 lines = ["Unrecognised command. Type \"help\" to learn more"]
             else:
                 lines = handler(state, rooms, arg)
+
+            # Handlers return display lines; the engine is responsible for printing them.
             for line in lines:
                 print(line)
+
+            # Stop the command loop after displaying the quit message.
             if cmd == "quit":
                 break
-    #Ctrl+C or Ctrl+D also end the game, we still want to write the transcript then
+
+    # Even if input is interrupted, continue so the transcript can be written below.
     except (KeyboardInterrupt, EOFError):
         print()
 
-    #the transcript is written once at the end, with the latest result of each room
+    # Write the final transcript after the game ends.
     write_transcript(state, transcript_filename)
     print(f"[Game] Transcript written to {transcript_filename}")
                 

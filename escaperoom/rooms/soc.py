@@ -4,6 +4,7 @@ import ipaddress
 from .base import Room, GameState
 
 class SocRoom(Room):
+    """Derive a keypad token from failed SSH logins in auth.log."""
 
     def __init__(self, data_dir="data"):
         super().__init__("SOC", "Log parsing & anomaly detection","KEYPAD", "auth.log",
@@ -11,21 +12,21 @@ class SocRoom(Room):
                          data_dir=data_dir)
 
     def solve(self, state: GameState):
-
+        """Validate log entries and build the keypad token from the busiest subnet."""
         malformed = 0
 
-        #Making all the checks and creating a list of only the valid records
+        # Keep only structurally valid failed-login entries for the subnet analysis.
         failed_records=[]
-        with open(self.data_path(self.item)) as auth_log: #importing the auth.log file 
+        with open(self.data_path(self.item)) as auth_log:
             for line in auth_log:
                 parts=line.split()
             
-                #checking that each line has 13 parts
+                # The expected sshd record has 13 whitespace-separated fields.
                 if len(parts) != 13:
                     malformed += 1
                     continue
 
-                #checking each part one by one. Do we need to perform this check? 
+                # Check fixed field positions before reading their values below.
                 if (parts[3] not in ("Failed", "Accepted") or
                     parts[4] != "password" or
                     parts[5] != "for" or 
@@ -39,7 +40,7 @@ class SocRoom(Room):
                     malformed += 1
                     continue
 
-                #checking that TIMESTAMP is a valid ISO-8601 timestamp
+                # Reject timestamps that cannot be parsed as ISO-8601.
                 timestamp = parts[0]
 
                 try:
@@ -48,16 +49,15 @@ class SocRoom(Room):
                     malformed += 1
                     continue
 
-                #checking that the PORT is an integer 
+                # Ports and process IDs should be numeric.
                 port = parts[10]
 
                 try:
-                    port = int(port) #not using type(value), as 
+                    port = int(port)
                 except ValueError:
                     malformed +=1
                     continue
 
-                #checking that the PID is an integer 
                 sshd = parts[2]
                 pid = sshd[5: -2]
 
@@ -67,7 +67,7 @@ class SocRoom(Room):
                     malformed += 1
                     continue
 
-                #checking that the source is a valid IPv4 address
+                # Require a valid IPv4 source address before grouping records.
                 ipv4 = parts[8]
 
                 try:
@@ -79,7 +79,7 @@ class SocRoom(Room):
                 if parts[3] == "Failed":
                     failed_records.append(parts)
 
-        #grouping failures by /24, storing its total failures and its each IPs failure count
+        # An IPv4 /24 is identified by its first three octets.
         def get_24_prefix(ipv4):
             return ipv4.rsplit('.', 1)[0]
         
@@ -88,21 +88,20 @@ class SocRoom(Room):
         for record in failed_records:
 
             ipv4 = record[8]
-            ipv4_group24 = get_24_prefix(ipv4) #removes the last octet of the ipv4, giving the /24 
+            ipv4_group24 = get_24_prefix(ipv4)
 
-            #grouping the /24-s and their counts
+            # Track both subnet-wide failures and per-IP failures within each subnet.
             if ipv4_group24 not in grouped_valid_records:
                 grouped_valid_records[ipv4_group24] = {"count": 1, "ips": {ipv4:1}}
             else:
                 grouped_valid_records[ipv4_group24]["count"] += 1
 
-                #within the /24, grouping the IPs and their failure counts
                 if ipv4 not in grouped_valid_records[ipv4_group24]["ips"]:
                     grouped_valid_records[ipv4_group24]["ips"][ipv4] = 1
                 else:
                     grouped_valid_records[ipv4_group24]["ips"][ipv4] += 1
 
-        #finding the /24 group with the largest failure count
+        # Select the subnet with the most failures; ties keep the first encountered.
         largest_count = 0
         largest_24_group = ""
 
@@ -111,7 +110,7 @@ class SocRoom(Room):
                 largest_count = record["count"]
                 largest_24_group = ipv4_group24
 
-        #finding the most frequent source IP inside the /24 with the largest failure count
+        # Within that subnet, find the IP responsible for the most failures.
         most_frequent_ip = "" 
         most_frequency = 0
 
@@ -120,9 +119,9 @@ class SocRoom(Room):
                 most_frequency = frequency
                 most_frequent_ip = ip
  
-        last_octet = most_frequent_ip.rsplit('.', 1)[1] # taking the last octet
+        last_octet = most_frequent_ip.rsplit('.', 1)[1]
         
-        # finding a sample failed-login line from the winning /24
+        # Return one original failed-login record as evidence for the result.
         sample=""
 
         for record in failed_records:
@@ -131,15 +130,16 @@ class SocRoom(Room):
             ipv4_group24 = get_24_prefix(ipv4)
 
             if ipv4_group24 == largest_24_group:
-                sample = " ".join(record) #to make the list record a string
+                sample = " ".join(record)
                 break
-        #creating the token
+
+        # The keypad code combines the IP's with the most failed login attempts' last octet and subnet failure count.
         keypad = last_octet + str(largest_count)
 
-        #stroing the token in GameState
+        # Store the solved room token for use by the game state.
         state.tokens["KEYPAD"] = keypad
         
-        #returning the evidence/expected output to the engine
+        # Return the token and supporting details for the game interface.
         return{
             "token": keypad,
             "top24": largest_24_group + ".0/24",
