@@ -80,12 +80,15 @@ class SocRoom(Room):
                     failed_records.append(parts)
 
         #grouping failures by /24, storing its total failures and its each IPs failure count
+        def get_24_prefix(ipv4):
+            return ipv4.rsplit('.', 1)[0]
+        
         grouped_valid_records = {}
 
         for record in failed_records:
 
             ipv4 = record[8]
-            ipv4_group24 = ipv4.rsplit('.', 1)[0] #removes the last octet of the ipv4, giving the /24 
+            ipv4_group24 = get_24_prefix(ipv4) #removes the last octet of the ipv4, giving the /24 
 
             #grouping the /24-s and their counts
             if ipv4_group24 not in grouped_valid_records:
@@ -125,9 +128,9 @@ class SocRoom(Room):
         for record in failed_records:
 
             ipv4 = record[8]
-            ipv4_group24 = ipv4.rsplit('.', 1)[0]
+            ipv4_group24 = get_24_prefix(ipv4)
 
-            if (record[3] == "Failed" and ipv4_group24 == largest_24_group):
+            if ipv4_group24 == largest_24_group:
                 sample = " ".join(record) #to make the list record a string
                 break
         #creating the token
