@@ -4,6 +4,7 @@
 from escaperoom.transcript import format_result
 
 import json
+from pathlib import Path
 
 #splits the user input into the command and its argument, e.g. "Move VAULT" -> ("move", "vault")
 def parse_command(text):
@@ -130,7 +131,11 @@ def cmd_hint(state, rooms, _arg):
 def cmd_save(state, rooms, arg):
     
     if arg is None:
-        return ["Please provide a filename. Usage: \"save <filename>\""]
+        return ["Please provide a filename. Usage: \"save <filename>.json\""]
+    
+    if not arg.endswith(".json"):
+        return ["Invalid filename. Save files must end with .json"]
+    
     data = {
         "current_room": state.current_room,
         "tokens": state.tokens,
@@ -140,16 +145,34 @@ def cmd_save(state, rooms, arg):
     try:
         with open(arg, "w", encoding = "utf-8") as file:
             json.dump(data, file, indent=4)
-        return ["[Game] Progress saved"]
+        return [f"[Game] Progress saved to '{arg}'."]
     
     except OSError as error:
         return [f"[Game] Error saving the progress: {error}"]
 
 #loads the game state from a JSON file, replacing the current state with the loaded one
 def cmd_load(state, rooms, arg):
-    if arg is None:
-        return ["Please provide a filename. Usage : \"load <filename>\""]
+    #list all the save files in the current directory
+    save_files = sorted(
+        file.name
+        for file in Path(".").glob("*.json")
+        if file.is_file()
+    )
 
+    if arg is None:
+        if save_files:
+            return ["Please provide a filename. Usage: \"load <filename>\"",
+                    "Available save files: " + ", ".join(save_files)]
+        return ["No .json save files found."]
+
+    if arg not in save_files:
+        if save_files:
+            return [
+                f"[Game] Save file '{arg}' does not exist.",
+                "Available save files: " + ", ".join(save_files)
+            ]
+        return [f"[Game] Save file '{arg}' does not exist. No .json save files found."]
+    
     try:
         with open(arg, "r", encoding = "utf-8") as file:
             data = json.load(file)
@@ -169,8 +192,6 @@ def cmd_load(state, rooms, arg):
         state.transcript = transcript
         
         return ["[Game] Progress loaded"]
-    except FileNotFoundError:
-        return [f"[Game] Save file '{arg}' does not exist."]
     
     except (OSError, json.JSONDecodeError, ValueError) as error:
         return [f"[Game] Error loading the progress: {error}"]
