@@ -5,9 +5,10 @@ from .base import Room, GameState
 
 class SocRoom(Room):
 
-    def __init__(self):
-        super().__init__("SOC", "Log parsing & anomaly detection", ["auth.log"],
-                         "Inspect auth.log. Look for the /24 subnet with the most failed logins; its busiest IP gives the keypad code.")
+    def __init__(self, data_dir="data"):
+        super().__init__("SOC", "Log parsing & anomaly detection","KEYPAD", "auth.log",
+                         "Inspect auth.log. Look for the /24 subnet with the most failed logins; its busiest IP gives the keypad code.",
+                         data_dir=data_dir)
 
     def solve(self, state: GameState):
 
@@ -15,7 +16,7 @@ class SocRoom(Room):
 
         #Making all the checks and creating a list of only the valid records
         failed_records=[]
-        with open("data/auth.log") as auth_log: #importing the auth.log file 
+        with open(self.data_path(self.item)) as auth_log: #importing the auth.log file 
             for line in auth_log:
                 parts=line.split()
             
@@ -143,14 +144,3 @@ class SocRoom(Room):
             "sample": sample,
             "malformed": malformed
         }
-
-#TEST - Run with "python -m escaperoom.rooms.soc" - TO BE REMOVED
-#state = GameState()
-#room = SocRoom()
-#result = room.solve(state)
-
-#print("TOKEN[KEYPAD]=" + result["token"])
-#print("EVIDENCE[KEYPAD].TOP24=" + result["top24"])
-#print("EVIDENCE[KEYPAD].COUNT=" + str(result["count"]))
-#print("EVIDENCE[KEYPAD].SAMPLE=" + result["sample"])
-#print("EVIDENCE[KEYPAD].MALFORMED_SKIPPED=" + str(result["malformed"]))

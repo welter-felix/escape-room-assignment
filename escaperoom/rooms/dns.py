@@ -4,15 +4,16 @@ import codecs
 from .base import Room, GameState
 
 class DnsRoom(Room):
-    def __init__(self):
-        super().__init__("dns", "Config analysis and decoding", ["dns.cfg"],
-                         "Inspect dns.cfg. The token_tag tells you which hint record is the real one, and some hints are double encoded.")
+    def __init__(self, data_dir="data"):
+        super().__init__("dns", "Config analysis and decoding","DNS","dns.cfg",
+                         "Inspect dns.cfg. The token_tag tells you which hint record is the real one, and some hints are double encoded.",
+                         data_dir=data_dir)
 
     def solve(self, state: GameState):
 
         records = {} #for storing the key, the encoding and the payload
 
-        with open("data/dns.cfg") as dns_cfg: #importing the dns.cfg file 
+        with open(self.data_path(self.item)) as dns_cfg: #importing the dns.cfg file 
 
             for line in dns_cfg:   #for each line in the file
 
@@ -62,13 +63,3 @@ class DnsRoom(Room):
                 "encoding": encoding, 
                 "decoded_line": decoded_utf8
             }
-
-#TEST - Run with "python -m escaperoom.rooms.dns" - RO BE REMOVED
-#state = GameState()
-#room = DnsRoom()
-#result = room.solve(state)
-
-#print("TOKEN[DNS]=" + result["token"])
-#print("EVIDENCE[DNS].KEY=" + result["key"])
-#print("EVIDENCE[DNS].ENCODING=" + result["encoding"])
-#print("EVIDENCE[DNS].DECODED_LINE=" + result["decoded_line"])

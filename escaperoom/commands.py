@@ -1,6 +1,7 @@
 #all the commands of the game
 #every command handler gets the same 3 arguments (state, rooms, arg) and returns a list of lines to print
-#the handlers do not print themselves, so the engine can print the lines and also write them to the transcript
+#the handlers do not print themselves, the engine prints the lines
+from escaperoom.transcript import format_result
 
 import json
 
@@ -47,15 +48,10 @@ def cmd_look(state, rooms, arg):
     if arg is not None:
         return ["Too many arguments. Usage: \"look\""]
 
-    #this is for removal, only bc we dont have an introroom yet
-    if state.current_room not in rooms:
-        return ["Current Room: " + state.current_room,
-                "There is nothing here yet. Possible rooms are: " + ", ".join(rooms)]
-
     room = rooms[state.current_room]
     lines = ["Current Room: " + room.name, room.description]
-    if room.items:
-        lines.append("Items here: " + ", ".join(room.items))
+    if room.item:
+        lines.append("Item here: " + room.item)
     else:
         lines.append("There are no items here.")
     return lines
@@ -65,13 +61,16 @@ def cmd_inspect(state, rooms, arg):
     if arg is None:
         return ["Please provide an item to inspect. Usage: \"inspect <item>\""]
 
-    #get the room we are in, None if it is not a room object (e.g. "intro")
-    room = rooms.get(state.current_room)
-    if room is None or arg not in room.items:
+    room = rooms[state.current_room]
+    if arg != room.item:
         return ["There is no item called " + arg + " here. Type \"look\" to see the items."]
 
+    #check if the room has already been solved by going through the transcript
+    if room.token_name in state.transcript:
+        return ["You already solved this room:"] + state.transcript[room.token_name]
+    
     #the final gate only opens if we have all the tokens, this also covers "use gate" since it calls cmd_inspect
-    if room.name == "final":
+    if room.token_name == "FINAL":
         missing = state.missing_tokens()
         if missing:
             return ["You still need: " + ", ".join(missing)]
@@ -86,11 +85,13 @@ def cmd_inspect(state, rooms, arg):
     if result is None:
         return ["Nothing useful was found in " + arg]
 
-    lines = [f"You inspect {arg}..."]
-    #here we add every part of the result from the solve function
-    for key, value in result.items():
-        lines.append(f"{key.upper()}={value}")
-    return lines
+    #we turn the result into the tagged transcript lines and store them in the state
+    #inspecting a room again replaces its old lines, so the transcript never has duplicates
+    tagged_lines = format_result(room.token_name, result)
+    state.transcript[room.token_name] = tagged_lines
+
+    #the player sees the same lines that end up in the transcript
+    return [f"You inspect {arg}..."] + tagged_lines
 
 
 def cmd_inventory(state, rooms, arg):
@@ -120,14 +121,10 @@ def cmd_use(state, rooms, arg):
         return ["You can't use " + arg + ". Only the gate can be used here."]
 
     #cmd_inspect checks if we have all the tokens before opening the gate
-    return cmd_inspect(state, rooms, "final_gate.txt")
+    return cmd_inspect(state, rooms, rooms[state.current_room].item)
         
 def cmd_hint(state, rooms, _arg):
-    #get the room we are in, None if it is not a room object (e.g. "intro")
-    room = rooms.get(state.current_room)
-    if room is None:
-        return ["Type \"move <room>\" to go to a room. Rooms: " + ", ".join(rooms)]
-    return [room.hint]
+    return [rooms[state.current_room].hint]
 
 #saves the current game state to a JSON file, overwriting it if it already exists
 def cmd_save(state, rooms, arg):
@@ -137,6 +134,7 @@ def cmd_save(state, rooms, arg):
     data = {
         "current_room": state.current_room,
         "tokens": state.tokens,
+        "transcript":state.transcript
     }
 
     try:
@@ -161,10 +159,15 @@ def cmd_load(state, rooms, arg):
 
         room = data.get("current_room")
         tokens = data.get("tokens")
-
+        transcript = data.get("transcript")
+        
+        if room not in rooms:
+            return [f"Not a valid save file: {room} is not a valid room"]
         state.current_room = room 
+        
         state.tokens = tokens 
-
+        state.transcript = transcript
+        
         return ["[Game] Progress loaded"]
     except FileNotFoundError:
         return [f"[Game] Save file '{arg}' does not exist."]

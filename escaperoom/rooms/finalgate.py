@@ -6,21 +6,23 @@ from .base import Room, GameState, REQUIRED_TOKENS
 
 class FinalGateRoom(Room):
 
-    def __init__(self):
+    def __init__(self, data_dir="data"):
         super().__init__(
             "final",
             "Final token verification",
-            ["final_gate.txt"],
-            "Collect all four tokens (KEYPAD, DNS, SAFE, PID) first, then type \"use gate\"."
+            #the final gate has no token of its own, "FINAL" is used to store and write its transcript lines
+            token_name="FINAL",
+            item="final_gate.txt",
+            hint="Collect all four tokens (KEYPAD, DNS, SAFE, PID) first, then type \"use gate\".",
+            data_dir=data_dir
         )
 
-    def solve(self, state: GameState, data_dir="data"):
+    def solve(self, state: GameState):
 
         # Read the configuration file
-        file_path = data_dir + "/final_gate.txt"
         config = {}
 
-        with open(file_path, "r", encoding="utf-8") as file:
+        with open(self.data_path(self.item), "r", encoding="utf-8") as file:
             for line in file:
                 if "=" in line:
                     key, value = line.strip().split("=", 1)
@@ -54,14 +56,7 @@ class FinalGateRoom(Room):
 
         # Return the required transcript lines
         return {
-            "transcript_lines": [
-                "FINAL_GATE=PENDING",
-                "MSG=" + message,
-                "HMAC=" + digest
-            ]
-        }
-
-
-#to run the room independently, you can use the following code snippet:
-###python -m escaperoom.rooms.finalgate
-#remove the values in the final_gate.txt file and run the code it will generate the values and put it into the file
+            "final_gate": "PENDING",
+            "msg": message,
+            "hmac": digest
+            }
