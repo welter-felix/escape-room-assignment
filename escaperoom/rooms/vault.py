@@ -1,30 +1,21 @@
-#importing regex
 import re
 
 from .base import Room, GameState
 
-
-
-#  explanation:
-#
-#We want to accept all Strings resembling this pattern "SAFE{A-B-C}" with the condition that the white spaces may vary
-#
-#In this regex, I mostly used "\s*" which just means there can be zero or more whitespaces in the expression
-#
-#The "^" marks the beginning of the expressing and after the "\s*" we check for the word SAFE, meaning if it would not be there, that line would not match
-#
-#then we check for the curly braces (which is a special character that is why I put a "\" in front of it just to make sure that it is seen as such)
-#
-#on the next stage I do 2 things, I use "()" which creates a group (so we can access the contents of it later) and with "\d" I specify that the string has to contain digits and with the "+" afterwards I make sure that it can be one or more digits
-#
-# Then I repeat this process and I mark the end with "$"
-
-
-#here i use re.compile so that the expression does no have to be compiled for each line
+# The regex accepts a whole line of the form SAFE{a-b-c}, where the spaces may vary:
+#   ^ and $        the whole line must be the SAFE block (no text before or after it)
+#   \s*            zero or more spaces, allowed around every part
+#   SAFE           the literal word
+#   \{ and \}      the literal curly braces ("{}" has a special meaning in regex, so they are escaped)
+#   (\d+)          a group of one or more digits; the three groups are read later with match.group(1..3)
+#   -              the literal dash between the numbers
+# Examples: "SAFE { 6-19 - 25 }" matches, "SAFE{5-6-12} maybe" and "partialSAFE{3-4-}garbage" do not.
+# re.compile builds the pattern once, instead of again for every line of the file.
 safe_pattern = re.compile(r'^\s*SAFE\s*\{\s*(\d+)\s*-\s*(\d+)\s*-\s*(\d+)\s*\}\s*$')
 
 
 class VaultRoom(Room):
+    """Find the one SAFE{a-b-c} line in vault_dump.txt whose checksum a + b = c is correct."""
 
     def __init__(self, data_dir="data"):
         super().__init__("vault", "Regex & checksum validation","SAFE", "vault_dump.txt",
@@ -32,31 +23,31 @@ class VaultRoom(Room):
                          data_dir=data_dir)
 
     def solve(self, state: GameState):
+        """Check each line for the SAFE format and the checksum, and save the first valid one as the SAFE token."""
 
-        #import the file
         with open(self.data_path(self.item)) as f:
-
-            # we iterate through each line in our file
+            # Read the file line by line.
             for line in f:
-                #here we look for patterns matching our regex
+                # Step 1: does the line have the SAFE{a-b-c} format?
                 match = safe_pattern.search(line)
                 if match:
-                    #In case the regex matches we take the groups that we specified and see if a + b == c and if it matches we found our line
+                    # Step 2: the checksum. The groups are strings, so they are converted to int first
+                    # (otherwise "6" + "19" would be "619").
                     if int(match.group(1)) + int(match.group(2))==int(match.group(3)):
 
+                        # The token is the three numbers joined with "-", e.g. "6-19-25".
                         safe_token = f"{match.group(1)}-{match.group(2)}-{match.group(3)}"
 
-                        #storing the token in GameState
+                        # Store the token in GameState so the inventory and the final gate can use it.
                         state.tokens["SAFE"] = safe_token
 
-                        #returning the evidence/expected output to the engine
+                        # Return the evidence. Only one line is valid, so we can stop at the first one.
                         return {
                             "token": safe_token,
-                            #the transcript wants the matched line in quotes, e.g. MATCH="SAFE{...}"
+                            # The transcript wants the matched line in quotes, e.g. MATCH="SAFE { 6-19 - 25 }".
                             "match": "\"" + line.rstrip("\n") + "\"",
                             "check": f"{match.group(1)}+{match.group(2)}={match.group(3)}"
                         }
 
-        #In case no valid SAFE line was found
+        # No line had both the right format and a correct checksum.
         return None
-
