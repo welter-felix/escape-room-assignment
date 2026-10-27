@@ -57,7 +57,7 @@ class FinalGateRoom(Room):
 
         # Return the required transcript lines
         return {
-            "final_gate": "PENDING",
+            "final_gate": "OPEN",
             "msg": message,
             "hmac": digest
             }
