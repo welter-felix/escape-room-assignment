@@ -1,7 +1,10 @@
 from .base import Room, GameState
 
+# Welcome the player, explain how to move between rooms, and point them to the
+# available puzzles; the intro itself does not contain a puzzle or token.
+
 class IntroRoom(Room):
-    """Welcome the player and explain the escape-room mission."""
+    # Welcome the player and explain the escape-room mission.
 
     def __init__(self):
         super().__init__(
@@ -12,5 +15,5 @@ class IntroRoom(Room):
         )
 
     def solve(self, state: GameState):
-        """Return no result because the intro contains no puzzle or token."""
+        #Return no result because the intro contains no puzzle or token.
         return None

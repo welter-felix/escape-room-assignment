@@ -1,11 +1,12 @@
-
 import hashlib
 import hmac
 from .base import Room, GameState, REQUIRED_TOKENS
 
-
+# Verify the collected puzzle tokens against the final gate configuration
+# using the configured token order and HMAC-SHA256 digest.
 class FinalGateRoom(Room):
-
+    """Verify the collected puzzle tokens and open the final gate."""
+    
     def __init__(self, data_dir="data"):
         super().__init__(
             "final",
@@ -19,6 +20,8 @@ class FinalGateRoom(Room):
         )
 
     def solve(self, state: GameState):
+        """Verify the collected puzzle tokens against the final gate configuration 
+        using the configured token order and HMAC-SHA256 digest."""
 
         # Read the configuration file
         config = {}

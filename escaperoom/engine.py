@@ -1,4 +1,6 @@
-# The engine connects the rooms, command handlers, player state, and transcript.
+# Run the escape-room game by creating its rooms and player state, dispatching
+# commands to their handlers, displaying responses, and writing the final
+# transcript when the game ends.
 from escaperoom.commands import parse_command, COMMANDS
 from escaperoom.transcript import write_transcript
 from escaperoom.rooms.base import GameState
@@ -10,6 +12,7 @@ from escaperoom.rooms.malware import MalwareRoom
 from escaperoom.rooms.finalgate import FinalGateRoom
 
 def start_game(start_room,data,transcript_filename):
+    """Set up the game, process player commands, and save the final transcript."""
     # Create each room and index it by lowercase name for case-insensitive lookup.
     # Pass the selected data folder to rooms that read evidence files.
     rooms = {room.name.lower(): room for room in [IntroRoom(), VaultRoom(data), DnsRoom(data), SocRoom(data), MalwareRoom(data), FinalGateRoom(data)]}
@@ -41,7 +44,8 @@ def start_game(start_room,data,transcript_filename):
                 lines = ["Unrecognised command. Type \"help\" to learn more"]
             else:
                 lines = handler(state, rooms, arg)
-                lines.append("")
+                if cmd != "quit":
+                    lines.append("")
 
             # Handlers return display lines; the engine is responsible for printing them.
             for line in lines:
@@ -55,7 +59,7 @@ def start_game(start_room,data,transcript_filename):
     except (KeyboardInterrupt, EOFError):
         print()
 
-    # Write the final transcript after the game ends.
+    # Write the final transcript after the game ends (even if the user does CTRL-C to exit).
     write_transcript(state, transcript_filename)
     print(f"[Game] Transcript written to {transcript_filename}")
                 

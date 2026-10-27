@@ -1,8 +1,7 @@
-"""Command handlers for the game.
+#Command handlers for the game.
+#Each handler receives the game state, room map, and optional command argument,
+#then returns lines for the engine to display.
 
-Each handler receives the game state, room map, and optional command argument,
-then returns lines for the engine to display.
-"""
 from escaperoom.transcript import format_result
 
 import json
@@ -22,14 +21,13 @@ def parse_command(text):
 
     return parts[0], parts[1]
 
-
+# List the commands registered in the command-handler map.
 def cmd_help(_state, _rooms, _arg):
-    """List the commands registered in the command-handler map."""
     return ["The supported commands are: " + ", ".join(COMMANDS)]
 
 
+# Move the player to a known room, or explain why the move cannot happen.
 def cmd_move(state, rooms, arg):
-    """Move the player to a known room, or explain why the move cannot happen."""
     # Check the request before changing the player's current room.
     if arg is None:
         return ["No argument provided. Usage: \"move <room>\"",
@@ -49,8 +47,8 @@ def cmd_move(state, rooms, arg):
         return ["Moving to " + rooms[arg].display_name + "..."] + cmd_look(state, rooms, None)
 
 
+# Describe the current room and indicate whether it contains an item.
 def cmd_look(state, rooms, arg):
-    """Describe the current room and indicate whether it contains an item."""
     # "look" takes no argument; show the room's description and available item.
     if arg is not None:
         return ["Too many arguments. Usage: \"look\""]
@@ -63,9 +61,8 @@ def cmd_look(state, rooms, arg):
         pass  # Don't mention items if the room has none; the player can still type "inspect" to check.
     return lines
 
-
+# Solve the current room's item and record the resulting evidence.
 def cmd_inspect(state, rooms, arg):
-    """Solve the current room's item and record the resulting evidence."""
     # The requested item must match the item in the room the player is currently in.
     if arg is None:
         return ["Please provide an item to inspect. Usage: \"inspect <item>\""]
@@ -99,9 +96,8 @@ def cmd_inspect(state, rooms, arg):
 
     return tagged_lines
 
-
+# Show collected tokens and which required tokens are still missing.
 def cmd_inventory(state, rooms, arg):
-    """Show collected tokens and which required tokens are still missing."""
     # An empty token dictionary means the player has not solved any rooms yet.
     if arg is not None:
             return ["Too many arguments. Usage: \"inventory\""]
@@ -120,8 +116,8 @@ def cmd_inventory(state, rooms, arg):
     return lines
 
 
+# Allow the gate to be used from the final room once requirements are met.
 def cmd_use(state, rooms, arg):
-    """Allow the gate to be used from the final room once requirements are met."""
     # Validate the item and location before forwarding the request to inspection.
     if arg is None:
         return ["Please provide an item to use. Usage: \"use <item>\""]
@@ -132,14 +128,15 @@ def cmd_use(state, rooms, arg):
 
     # Reuse inspection's token checks and gate-solving behavior.
     return cmd_inspect(state, rooms, rooms[state.current_room].item)
-        
+
+# Return the hint configured for the current room.
 def cmd_hint(state, rooms, _arg):
-    """Return the hint configured for the current room."""
     # Each room stores its own hint text.
     return [rooms[state.current_room].hint]
 
+
+#Write the current room, tokens, and transcripts to a JSON save file.
 def cmd_save(state, rooms, arg):
-    """Write the current room, tokens, and transcripts to a JSON save file."""
     # Require a filename with the expected extension before writing anything.
     if arg is None:
         return ["Please provide a filename. Usage: \"save <filename>.json\""]
@@ -163,8 +160,9 @@ def cmd_save(state, rooms, arg):
     except OSError as error:
         return [f"[Game] Error saving the progress: {error}"]
 
+    
+#Load a save file after checking that its room exists in this game.
 def cmd_load(state, rooms, arg):
-    """Load a save file after checking that its room exists in this game."""
     # Only offer JSON files from the current directory as save files.
     save_files = sorted(
         file.name
@@ -214,8 +212,9 @@ def cmd_load(state, rooms, arg):
     except (OSError, json.JSONDecodeError, ValueError) as error:
         return [f"[Game] Error loading the progress: {error}"]
 
+
+#Return a farewell; the engine handles stopping the game loop.
 def cmd_quit(state, rooms, arg):
-    """Return a farewell; the engine handles stopping the game loop."""
     # The game engine stops its input loop after displaying this message.
     return ["[Game] Goodbye."]
 
