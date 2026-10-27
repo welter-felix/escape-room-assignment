@@ -11,7 +11,7 @@ from .base import Room, GameState
 #   -              the literal dash between the numbers
 # Examples: "SAFE { 6-19 - 25 }" matches, "SAFE{5-6-12} maybe" and "partialSAFE{3-4-}garbage" do not.
 # re.compile builds the pattern once, instead of again for every line of the file.
-safe_pattern = re.compile(r'^\s*SAFE\s*\{\s*(\d+)\s*-\s*(\d+)\s*-\s*(\d+)\s*\}\s*$')
+SAFE_PATTERN = re.compile(r'^\s*SAFE\s*\{\s*(\d+)\s*-\s*(\d+)\s*-\s*(\d+)\s*\}\s*$')
 
 
 class VaultRoom(Room):
@@ -29,7 +29,7 @@ class VaultRoom(Room):
             # Read the file line by line.
             for line in f:
                 # Step 1: does the line have the SAFE{a-b-c} format?
-                match = safe_pattern.search(line)
+                match = SAFE_PATTERN.search(line)
                 if match:
                     # Step 2: the checksum. The groups are strings, so they are converted to int first
                     # (otherwise "6" + "19" would be "619").
