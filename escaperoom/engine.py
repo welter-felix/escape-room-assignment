@@ -25,9 +25,6 @@ def start_game(start_room,data,transcript_filename):
     state = GameState(current_room=start_room)
 
     print ("[Game] Cyber Escape Room started. Type 'help' for commands.")
-    # Display the starting room before asking the player for a command.
-    for line in COMMANDS["look"](state, rooms, None):
-        print(line)
 
     # Read commands until the player quits or closes/interrupts the input.
     try:
@@ -41,6 +38,7 @@ def start_game(start_room,data,transcript_filename):
                 lines = ["Unrecognised command. Type \"help\" to learn more"]
             else:
                 lines = handler(state, rooms, arg)
+                lines.append("")
 
             # Handlers return display lines; the engine is responsible for printing them.
             for line in lines:

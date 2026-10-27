@@ -6,9 +6,24 @@ KEY_NAMES = {"malformed": "MALFORMED_SKIPPED"}
 
 #turns the result of a room into the tagged transcript lines, e.g.
 #("SAFE", {"token": "6-19-25", "check": "6+19=25"}) -> ["TOKEN[SAFE]=6-19-25", "EVIDENCE[SAFE].CHECK=6+19=25"]
-def format_result(token_name, result):
+def format_result(token_name, result, state=None):
     lines = []
+    #displays the human-readable summary
+    summary = result.get("summary", [])
+    lines.extend(summary)
+
+    if token_name == "FINAL":
+            tokens = ", ".join(
+                f"{key}={value}" for key, value in state.tokens.items()
+            )
+            lines.append(f"Collected tokens: {tokens}")
+
     for key, value in result.items():
+        
+        if key == "summary":
+            lines.append("")
+            continue
+
         #the final gate has no token of its own, its lines are written without TOKEN[...] or EVIDENCE[...]
         if token_name == "FINAL":
             lines.append(f"{key.upper()}={value}")
@@ -19,6 +34,7 @@ def format_result(token_name, result):
             #use the transcript name of the key if it has one, otherwise the key itself
             tag = KEY_NAMES.get(key, key).upper()
             lines.append(f"EVIDENCE[{token_name}].{tag}={value}")
+
     return lines
 
 

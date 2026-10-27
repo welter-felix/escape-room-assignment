@@ -27,9 +27,9 @@ safe_pattern = re.compile(r'^\s*SAFE\s*\{\s*(\d+)\s*-\s*(\d+)\s*-\s*(\d+)\s*\}\s
 class VaultRoom(Room):
 
     def __init__(self, data_dir="data"):
-        super().__init__("vault", "Regex & checksum validation","SAFE", "vault_dump.txt",
+        super().__init__("vault", "A noisy dump scrolls past. Somewhere a SAFE{a-b-c} hides.","SAFE", "vault_dump.txt",
                          "Inspect vault_dump.txt. Only one SAFE{a-b-c} line has a valid checksum where a + b = c.",
-                         data_dir=data_dir)
+                         data_dir=data_dir, display_name="Vault Corridor")
 
     def solve(self, state: GameState):
 
@@ -51,6 +51,12 @@ class VaultRoom(Room):
 
                         #returning the evidence/expected output to the engine
                         return {
+                            "summary": [
+                                "[Room Vault] Scanning dump...",
+                                f"Found candidate: {line.rstrip()}",
+                                f"Checksum: {match.group(1)}+{match.group(2)}={match.group(3)} (OK)",
+                            ],
+                            
                             "token": safe_token,
                             #the transcript wants the matched line in quotes, e.g. MATCH="SAFE{...}"
                             "match": "\"" + line.rstrip("\n") + "\"",

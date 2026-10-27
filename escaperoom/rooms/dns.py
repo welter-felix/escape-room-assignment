@@ -7,9 +7,9 @@ class DnsRoom(Room):
     """Decode the authoritative hint in dns.cfg to obtain the DNS token."""
 
     def __init__(self, data_dir="data"):
-        super().__init__("dns", "Config analysis and decoding","DNS","dns.cfg",
+        super().__init__("dns", "The walls are covered with scribbled key=value pairs.","DNS","dns.cfg",
                          "Inspect dns.cfg. The token_tag tells you which hint record is the real one, and some hints are double encoded.",
-                         data_dir=data_dir)
+                         data_dir=data_dir, display_name="DNS Closet")
 
     def solve(self, state: GameState):
         """Follow the token tag, decode its hint, and save the resulting token."""
@@ -63,6 +63,12 @@ class DnsRoom(Room):
 
             # Return the token and supporting details for the game interface.
             return{
+                "summary": [
+                    "[Room DNS] Decoding hints...",
+                    f"Decoded line : {decoded_utf8}",
+                    f"Token formed: {dns_token}",
+                ],
+                  
                 "token": dns_token,
                 "key": auth_hint,
                 "encoding": encoding, 

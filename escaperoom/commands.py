@@ -32,7 +32,7 @@ def cmd_move(state, rooms, arg):
     """Move the player to a known room, or explain why the move cannot happen."""
     # Check the request before changing the player's current room.
     if arg is None:
-        return ["Please provide a room to go to",
+        return ["No argument provided. Usage: \"move <room>\"",
                 "Possible rooms are: " + ", ".join(rooms)]
 
     if arg not in rooms:
@@ -40,10 +40,14 @@ def cmd_move(state, rooms, arg):
                 "Possible rooms are: " + ", ".join(rooms)]
 
     if state.current_room == arg:
-        return ["You are already in " + arg]
+        return ["You are already in " + rooms[arg].display_name]
 
     state.current_room = arg
-    return ["Moving to " + arg]
+    if arg == "final":
+            return ["You stand before the Final Gate. The console asks for proof."]
+    else:
+        return ["You enter the " + rooms[arg].display_name + ".", rooms[arg].description, 
+                "Items here: " + (rooms[arg].item or "none")]
 
 
 def cmd_look(state, rooms, arg):
@@ -53,11 +57,11 @@ def cmd_look(state, rooms, arg):
         return ["Too many arguments. Usage: \"look\""]
 
     room = rooms[state.current_room]
-    lines = ["Current Room: " + room.name, room.description]
+    lines = ["You are in the " + room.display_name, room.description]
     if room.item:
-        lines.append("Item here: " + room.item)
+        lines.append("Items here: " + room.item)
     else:
-        lines.append("There are no items here.")
+        pass  # Don't mention items if the room has none; the player can still type "inspect" to check.
     return lines
 
 
@@ -91,26 +95,27 @@ def cmd_inspect(state, rooms, arg):
         return ["Nothing useful was found in " + arg]
 
     # Format the result for display and save it so it can be shown again later.
-    tagged_lines = format_result(room.token_name, result)
+    tagged_lines = format_result(room.token_name, result, state)
     state.transcript[room.token_name] = tagged_lines
 
-    return [f"You inspect {arg}..."] + tagged_lines
+    return tagged_lines
 
 
 def cmd_inventory(state, rooms, arg):
     """Show collected tokens and which required tokens are still missing."""
     # An empty token dictionary means the player has not solved any rooms yet.
+    if arg is not None:
+            return ["Too many arguments. Usage: \"inventory\""]
+    
     if not state.tokens:
         return ["Your inventory is empty."]
 
     # List collected tokens, then summarize what is still needed for the final gate.
-    lines = ["Tokens collected:"]
-    for name, token in state.tokens.items():
-        lines.append(f"  {name}: {token}")
+    lines = ["You currently hold: " + ", ".join(state.tokens.keys())]
 
     missing = state.missing_tokens()
     if missing:
-        lines.append("Still missing: " + ", ".join(missing))
+        lines.append("You are still missing: " + ", ".join(missing))
     else:
         lines.append("All tokens collected!")
     return lines
@@ -198,7 +203,7 @@ def cmd_load(state, rooms, arg):
         
         # Reject saves pointing to a room that is not part of this game.
         if room not in rooms:
-            return [f"Not a valid save file: {room} is not a valid room"]
+            return [f"Not a valid save file: {room} is not a valid room."]
         # Restore the room, collected tokens, and solved-room transcripts.
         state.current_room = room 
         

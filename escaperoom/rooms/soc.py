@@ -7,9 +7,9 @@ class SocRoom(Room):
     """Derive a keypad token from failed SSH logins in auth.log."""
 
     def __init__(self, data_dir="data"):
-        super().__init__("SOC", "Log parsing & anomaly detection","KEYPAD", "auth.log",
+        super().__init__("SOC", "A cluttered screen shows failed SSH login attempts.","KEYPAD", "auth.log",
                          "Inspect auth.log. Look for the /24 subnet with the most failed logins; its busiest IP gives the keypad code.",
-                         data_dir=data_dir)
+                         data_dir=data_dir, display_name="SOC Triage Desk")
 
     def solve(self, state: GameState):
         """Validate log entries and build the keypad token from the busiest subnet."""
@@ -141,6 +141,13 @@ class SocRoom(Room):
         
         # Return the token and supporting details for the game interface.
         return{
+            "summary": [
+                "[Room SOC] Parsing logs...",
+                f"{largest_count} failed attempts found in {largest_24_group}.0/24",
+                f"Top IP is {most_frequent_ip} (last octet={last_octet})",
+                f"Token formed: {keypad}",
+            ],
+
             "token": keypad,
             "top24": largest_24_group + ".0/24",
             "count": largest_count,

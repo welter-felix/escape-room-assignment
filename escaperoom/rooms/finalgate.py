@@ -14,7 +14,8 @@ class FinalGateRoom(Room):
             token_name="FINAL",
             item="final_gate.txt",
             hint="Collect all four tokens (KEYPAD, DNS, SAFE, PID) first, then type \"use gate\".",
-            data_dir=data_dir
+            data_dir=data_dir,
+            display_name="Final Gate"
         )
 
     def solve(self, state: GameState):

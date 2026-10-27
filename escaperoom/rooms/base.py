@@ -24,7 +24,16 @@ class GameState:
 class Room:
     """Shared configuration and interface for each game room."""
 
-    def __init__(self, name: str, description: str, token_name: str | None = None, item: str | None = None, hint: str = "No hint for this room.", data_dir: str = "data"):
+    def __init__(
+        self, 
+        name: str, 
+        description: str, 
+        token_name: str | None = None, 
+        item: str | None = None, 
+        hint: str = "No hint for this room.", 
+        data_dir: str = "data",
+        display_name: str | None = None,
+    ):
         self.name= name
         self.description = description
         self.token_name = token_name
@@ -34,6 +43,7 @@ class Room:
         self.hint = hint
         # Directory containing this room's evidence files.
         self.data_dir = data_dir
+        self.display_name = display_name or name.replace("_", " ").title()
 
     def data_path(self, filename):
         """Build the path to a room's evidence file."""
