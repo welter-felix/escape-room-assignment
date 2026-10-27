@@ -46,8 +46,7 @@ def cmd_move(state, rooms, arg):
     if arg == "final":
             return ["You stand before the Final Gate. The console asks for proof."]
     else:
-        return ["You enter the " + rooms[arg].display_name + ".", rooms[arg].description, 
-                "Items here: " + (rooms[arg].item or "none")]
+        return ["Moving to " + rooms[arg].display_name + "..."] + cmd_look(state, rooms, None)
 
 
 def cmd_look(state, rooms, arg):
