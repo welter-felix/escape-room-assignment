@@ -1,7 +1,6 @@
 # Set up command-line options so the player can choose how to start the game.
 import argparse
 import os
-import os
 
 from escaperoom.engine import start_game
 
