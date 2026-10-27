@@ -1,5 +1,4 @@
 # The engine connects the rooms, command handlers, player state, and transcript.
-import time
 from escaperoom.commands import parse_command, COMMANDS
 from escaperoom.transcript import write_transcript
 from escaperoom.rooms.base import GameState
@@ -25,6 +24,10 @@ def start_game(start_room,data,transcript_filename):
     state = GameState(current_room=start_room)
 
     print ("[Game] Cyber Escape Room started. Type 'help' for commands.")
+
+    # Show the starting room right away, so the player knows where they are.
+    for line in COMMANDS["look"](state, rooms, None):
+        print(line)
 
     # Read commands until the player quits or closes/interrupts the input.
     try:
